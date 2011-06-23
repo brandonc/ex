@@ -4,36 +4,52 @@
 
 # What It Does #
 
-1. strings are extended with regex-powered methods IsPatternMatch, MatchesPattern, Sub, and GSub
-2. The MatchesPattern method returns a new class called MatchData that simplifies access to captures. It's a little like ruby's MatchData class. See [this answer][1] on stackoverflow for a better explanation of why MatchCollection is so complicated.
-3. 'RegexOptions' (optional) can be expressed as a character string.
+1. strings have been extended up with Regex-powered methods `IsPatternMatch`, `MatchesPattern`, `Sub`, and `GSub`
+2. The MatchesPattern method returns a new class `MatchData` that simplifies access to captures. It's a little like ruby's class of the same name. See [this answer][1] on stackoverflow for a better explanation of why MatchCollection is so complicated.
+3. Any `RegexOptions` can be expressed as a character string
+4. When using .NET 4, regex objects are cached (Uses ConcurrentDictionary)
+
+# What It Does Not Do #
+
+1. This is not a `System.Text.RegularExpressions` replacement. It just greases the wheels a little.
+2. Compile on framework versions below 3.5
 
 # Examples #
 
 ### Test a match ###
 
-    "Adam & Steve".IsPatternMatch(@"Adam (&|and) (?<someone_else>\w+)"); // Returns true
+    "Adam & Steve".IsPatternMatch(
+        @"Adam (&|and) (?<someone_else>\w+)"
+    ); // Returns true
 
 ### Test a match with case insensitivity option: ###
 
-    "ADAM AND STEVE".IsPatternMatch(@"adam (&|and) (?<someone_else>\w+)", "i"); // Returns true
+    "ADAM AND STEVE".IsPatternMatch(
+        @"adam (&|and) (?<someone_else>\w+)",
+        "i"   // RegexOptions are expressed as a character string (see below for reference)
+    ); // Returns true
 
 ### Substitution: ###
 
+    // Replace all with GSub
     "A man, a plan, a canal, panama".GSub("a.", "ax");  // "A max, axplax, axcaxax, paxaxa"
+
+    // Replace first with Sub
     "A man, a plan, a canal, panama".Sub("a.", "ax");  // "A max, a plan, a canal, panama"
 
 ### Match Data ###
 
-    string fullname = "John Wilkes Booth";
+    string fullname = "Lee Harvey Oswald";
     var m = fullname.MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
 
-    // "John" == m["firstname"]
-    // "Booth" == m["lastname"]
-    // "John Wilkes Booth" == m[0]
-    // "Wilkes" == m[1]
+    // m["firstname"] == "Lee"
+    // m["lastname"] == "Oswald"
+    // m[0] == "Lee Harvey Oswald"  (First element is always the entire match)
+    // m[1] == "Harvey"             (Second element is always the first numbered match)
+    // m.Begin(1) == 4              (This is the beginning offset of "Harvey")
+    // m.End(1) == 10               (This is the end offset "Harvey")
 
-Isn't that better?
+Isn't this refreshing?
 
 # Option Reference #
 

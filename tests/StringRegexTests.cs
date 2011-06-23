@@ -84,6 +84,16 @@ namespace Tests
             Assert.IsTrue("Adam & Steve".IsPatternMatch(@"Adam (&|and) (?<someone_else>\w+)"));
             Assert.IsTrue("ADAM AND STEVE".IsPatternMatch(@"adam (&|and) (?<someone_else>\w+)", "i"));
 
+            string fullname = "Lee Harvey Oswald";
+            var m = fullname.MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
+
+            Assert.AreEqual("Lee", m["firstname"]);
+            Assert.AreEqual("Oswald", m["lastname"]);
+            Assert.AreEqual("Lee Harvey Oswald", m[0]);
+            Assert.AreEqual("Harvey", m[1]);
+            Assert.AreEqual(4, m.Begin(1));
+            Assert.AreEqual(10, m.End(1));
+
         }
 
         [TestMethod]
