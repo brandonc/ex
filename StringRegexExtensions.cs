@@ -245,43 +245,32 @@ namespace System
         };
 
 #if !NET35
-        static readonly ConcurrentDictionary<string, Regex> _cache = new ConcurrentDictionary<string, Regex>();
+        static readonly ConcurrentDictionary<Tuple<string, RegexOptions>, Regex> _cache = new ConcurrentDictionary<Tuple<string, RegexOptions>, Regex>();
+
+        static Tuple<string, RegexOptions> MakeCacheKey(string pattern, RegexOptions opt)
+        {
+            return new Tuple<string, RegexOptions>(pattern, opt);
+        }
+
+        static Tuple<string, RegexOptions> MakeCacheKey(string pattern)
+        {
+            return new Tuple<string, RegexOptions>(pattern, RegexOptions.None);
+        }
 
         static Regex ToRegex(this string pattern)
         {
-            Regex result;
-            if (_cache.TryGetValue(pattern, out result))
-                return result;
-            else {
-                result = new Regex(pattern);
-                _cache.AddOrUpdate(pattern, result, (key, old) => {
-                    return old;
-                });
-                return result;
-            }
+            return _cache.GetOrAdd(MakeCacheKey(pattern), p =>
+            {
+                return new Regex(pattern);
+            });
         }
 
         static Regex ToRegex(this string pattern, RegexOptions options)
         {
-            string key = String.Format("{0}-{1}", pattern, GetOptionChars(options));
-
-            Regex result;
-            if (_cache.TryGetValue(key, out result))
+            return _cache.GetOrAdd(MakeCacheKey(pattern, options), p =>
             {
-                return result;
-            }
-            else 
-            {
-                result = new Regex(pattern, options);
-                _cache.AddOrUpdate(key, result, (patternpluskey, old) =>
-                {
-                    if (options != old.Options)
-                        return new Regex(patternpluskey.Substring(0, patternpluskey.LastIndexOf('-')), options);
-
-                    return old;
-                });
-                return result;
-            }
+                return new Regex(pattern, options);
+            });
         }
 
         public static int CacheCount
