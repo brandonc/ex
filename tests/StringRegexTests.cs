@@ -77,6 +77,16 @@ namespace Tests
         }
 
         [TestMethod]
+        public void readme_examples_work()
+        {
+            Assert.AreEqual("A max, axplax, axcaxax, paxaxa", "A man, a plan, a canal, panama".GSub("a.", "ax"));
+            Assert.AreEqual("A max, a plan, a canal, panama", "A man, a plan, a canal, panama".Sub("a.", "ax"));
+            Assert.IsTrue("Adam & Steve".IsPatternMatch(@"Adam (&|and) (?<someone_else>\w+)"));
+            Assert.IsTrue("ADAM AND STEVE".IsPatternMatch(@"adam (&|and) (?<someone_else>\w+)", "i"));
+
+        }
+
+        [TestMethod]
         public void matchdata_contains_names_in_named_captures()
         {
             string[] expected = { "firstname", "lastname" };
