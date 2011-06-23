@@ -83,6 +83,34 @@ namespace Tests
             Assert.AreEqual(4, matches.Count);
         }
 
+        [TestMethod]
+        public void TestCapturesEnumerator()
+        {
+            var matches = "John Wilkes Booth".Matches(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
+            int index = 0;
+            foreach (string capture in matches)
+            {
+                switch (index)
+                {
+                    case 0:
+                        Assert.AreEqual("John Wilkes Booth", capture);
+                        break;
+                    case 1:
+                        Assert.AreEqual("Wilkes", capture);
+                        break;
+                    case 2:
+                        Assert.AreEqual("John", capture);
+                        break;
+                    case 3:
+                        Assert.AreEqual("Booth", capture);
+                        break;
+                }
+                index++;
+            }
+
+            Assert.AreEqual(4, index);
+        }
+
 #if !NET35
         [TestMethod]
         public void CacheTest()

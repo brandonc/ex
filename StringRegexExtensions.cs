@@ -28,7 +28,7 @@ namespace System
     /// See http://stackoverflow.com/questions/2250335/differences-among-net-capture-group-match/2251774#2251774 for a good
     /// explanation of why MatchCollection is so complicated.
     /// </remarks>
-    public class MatchData 
+    public class MatchData : IEnumerable<string>
     {
         private List<string> indexcaptures = new List<string>();
         private Dictionary<string, string> namedcaptures = null;
@@ -67,10 +67,7 @@ namespace System
                     if (namedcaptures == null)
                         namedcaptures = new Dictionary<string, string>();
 
-                    if (namedcaptures.ContainsKey(name))
-                        this.namedcaptures[name] = group.Value;
-                    else
-                        this.namedcaptures.Add(name, group.Value);
+                    this.namedcaptures[name] = group.Value;
                 }
             }
         }
@@ -94,6 +91,32 @@ namespace System
         public int Count
         {
             get { return indexcaptures.Count + (namedcaptures == null ? 0 : namedcaptures.Count); }
+        }
+
+        IEnumerator<string> GetEnumeratorInternal()
+        {
+            foreach (string capture in indexcaptures)
+            {
+                yield return capture;
+            }
+
+            if (namedcaptures != null)
+            {
+                foreach (KeyValuePair<string, string> capture in namedcaptures)
+                {
+                    yield return capture.Value;
+                }
+            }
+        }
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            return GetEnumeratorInternal();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumeratorInternal();
         }
     }
 
