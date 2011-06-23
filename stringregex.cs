@@ -1,6 +1,76 @@
+using System.Linq;
+using System.Collections.Generic;
+using System.Collections;
 using System.Text.RegularExpressions;
+
 namespace System
 {
+    public class MatchData 
+    {
+        private List<string> indexcaptures = new List<string>();
+        private Dictionary<string, string> namedcaptures = null;
+
+        public string this[int index]
+        {
+            get
+            {
+                return indexcaptures[index];
+            }
+        }
+
+        public string this[string name]
+        {
+            get
+            {
+                if (namedcaptures == null)
+                    return null;
+
+                return namedcaptures[name];
+            }
+        }
+
+        private void AddMatch(Regex regex, Match match)
+        {
+            for (int index = 0; index < match.Groups.Count; index++)
+            {
+                Group group = match.Groups[index];
+                string name = regex.GroupNameFromNumber(index);
+                int tryint;
+
+                if (Int32.TryParse(name, out tryint))
+                    this.indexcaptures.Add(group.Value);
+                else
+                {
+                    if (namedcaptures == null)
+                        namedcaptures = new Dictionary<string, string>();
+
+                    this.namedcaptures.Add(name, group.Value);
+                }
+            }
+        }
+
+        public MatchData(Regex regex, Match match)
+        {
+            AddMatch(regex, match);
+        }
+
+        public MatchData(Regex regex, MatchCollection matches)
+        {
+            if (matches == null || matches.Count == 0)
+                return;
+
+            foreach (Match match in matches)
+            {
+                AddMatch(regex, match);
+            }
+        }
+
+        public int Count
+        {
+            get { return indexcaptures.Count + (namedcaptures == null ? 0 : namedcaptures.Count); }
+        }
+    }
+
     public static class StringRegex
     {
         public static bool IsMatch(this string pattern, string input)
@@ -34,59 +104,80 @@ namespace System
             return pattern.ToRegex(GetOptions(options)).IsMatch(input, startat);
         }
 
-        public static MatchCollection Matches(this string pattern, string input)
+        public static Dictionary<string, int> NamedCaptures(this string pattern)
         {
-            return pattern.ToRegex().Matches(input);
+            var re = pattern.ToRegex();
+            string[] names = re.GetGroupNames();
+            
+            var result = new Dictionary<string,int>();
+            Array.ForEach<string>(re.GetGroupNames(), x => result.Add(x, re.GroupNumberFromName(x)));
+
+            return result;
+        }
+
+        public static MatchData Matches(this string pattern, string input)
+        {
+            var re = pattern.ToRegex();
+            return new MatchData(re, re.Matches(input));
         }
 
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchCollection Matches(this string pattern, string input, string options)
+        public static MatchData Matches(this string pattern, string input, string options)
         {
-            return pattern.ToRegex(GetOptions(options)).Matches(input);
+            var re = pattern.ToRegex(GetOptions(options));
+            return new MatchData(re, re.Matches(input));
         }
 
-        public static MatchCollection Matches(this string pattern, string input, int startat)
+        public static MatchData Matches(this string pattern, string input, int startat)
         {
-            return pattern.ToRegex().Matches(input, startat);
-        }
-
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchCollection Matches(this string pattern, string input, int startat, string options)
-        {
-            return pattern.ToRegex(GetOptions(options)).Matches(input, startat);
-        }
-
-        public static Match Match(this string pattern, string input)
-        {
-            return pattern.ToRegex().Match(input);
+            var re = pattern.ToRegex();
+            return new MatchData(re, re.Matches(input, startat));
         }
 
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static Match Match(this string pattern, string input, string options)
+        public static MatchData Matches(this string pattern, string input, int startat, string options)
         {
-            return pattern.ToRegex(GetOptions(options)).Match(input);
+            var re = pattern.ToRegex(GetOptions(options));
+            return new MatchData(re, re.Matches(input, startat));
         }
 
-        public static Match Match(this string pattern, string input, int startat)
+        public static MatchData Match(this string pattern, string input)
         {
-            return pattern.ToRegex().Match(input, startat);
-        }
-
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static Match Match(this string pattern, string input, int startat, string options)
-        {
-            return pattern.ToRegex(GetOptions(options)).Match(input, startat);
-        }
-
-        public static Match Match(this string pattern, string input, int beginning, int length)
-        {
-            return pattern.ToRegex().Match(input, beginning, length);
+            var re = pattern.ToRegex();
+            return new MatchData(re, re.Match(input));
         }
 
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static Match Match(this string pattern, string input, int beginning, int length, string options)
+        public static MatchData Match(this string pattern, string input, string options)
         {
-            return pattern.ToRegex(GetOptions(options)).Match(input, beginning, length);
+            var re = pattern.ToRegex(GetOptions(options));
+            return new MatchData(re, re.Match(input));
+        }
+
+        public static MatchData Match(this string pattern, string input, int startat)
+        {
+            var re = pattern.ToRegex();
+            return new MatchData(re, re.Match(input, startat));
+        }
+
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
+        public static MatchData Match(this string pattern, string input, int startat, string options)
+        {
+            var re = pattern.ToRegex(GetOptions(options));
+            return new MatchData(re, re.Match(input, startat));
+        }
+
+        public static MatchData Match(this string pattern, string input, int beginning, int length)
+        {
+            var re = pattern.ToRegex();
+            return new MatchData(re, re.Match(input, beginning, length));
+        }
+
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
+        public static MatchData Match(this string pattern, string input, int beginning, int length, string options)
+        {
+            var re = pattern.ToRegex(GetOptions(options));
+            return new MatchData(re, re.Match(input, beginning, length));
         }
 
         public static string Sub(this string input, string pattern, string replacement)
@@ -134,14 +225,9 @@ namespace System
             return new Regex(pattern, options);
         }
 
-        public static Regex CompileRegex(this string pattern)
-        {
-            return new Regex(pattern, RegexOptions.Compiled);
-        }
-
         private static RegexOptions GetOptions(string options)
         {
-            var opts = RegexOptions.None;
+            RegexOptions opts = RegexOptions.None;
             opts |= options.IndexOf('i') >= 0 ? RegexOptions.IgnoreCase : RegexOptions.None;
             opts |= options.IndexOf('s') >= 0 ? RegexOptions.Singleline : RegexOptions.None;
             opts |= options.IndexOf('x') >= 0 ? RegexOptions.IgnorePatternWhitespace : RegexOptions.None;
@@ -150,10 +236,6 @@ namespace System
             opts |= options.IndexOf('r') >= 0 ? RegexOptions.RightToLeft : RegexOptions.None;
 
             return opts;
-        }
-
-        static StringRegex()
-        {
         }
     }
 }
