@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace test
+namespace Tests
 {
     [TestClass]
     public class StringRegexTests
@@ -71,5 +71,38 @@ namespace test
             Assert.AreEqual("foo", data[1]);
             Assert.AreEqual("789", data[2]);
         }
+
+        [TestMethod]
+        public void TestNamedAndIndexedCaptures()
+        {
+            var matches = "John Wilkes Booth".Matches(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
+            Assert.AreEqual("John Wilkes Booth", matches[0]);
+            Assert.AreEqual("John", matches["firstname"]);
+            Assert.AreEqual("Wilkes", matches[1]);
+            Assert.AreEqual("Booth", matches["lastname"]);
+            Assert.AreEqual(4, matches.Count);
+        }
+
+#if !NET35
+        [TestMethod]
+        public void CacheTest()
+        {
+            int startEntities = StringRegexExtensions.CacheCount;
+            var data = @"uuu|iii|ooo|ppp";
+            data.Match("uuu");
+            data.Match("uuu", "i");
+            data.Match("uuu");
+            Assert.AreEqual(startEntities + 2, StringRegexExtensions.CacheCount);
+            data.IsMatch("|.+|", "ixc");
+            data.IsMatch("|.+|", "ic");
+            data.IsMatch("|.+|", "ixc");
+            data.IsMatch("|.+|", "ixc");
+            data.IsMatch("|.+|", "ixc");
+            data.IsMatch("|.+|", "ixc");
+            data.IsMatch("|.+|", "ixc");
+            data.IsMatch("|.+|", "ixc");
+            Assert.AreEqual(startEntities + 4, StringRegexExtensions.CacheCount);
+        }
+#endif
     }
 }

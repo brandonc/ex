@@ -1,13 +1,33 @@
+// Uncomment this line if you're compiling with Visual Studio 2008
+// #define NET35
+
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text.RegularExpressions;
-#if DOTNET4
+#if !NET35
 using System.Collections.Concurrent;
+using System.Text;
+using System.Threading;
 #endif
 
 namespace System
 {
+    /// <summary>
+    /// Simplified collection of regex captures.
+    /// </summary>
+    /// <example>
+    /// var matches = "John Wilkes Booth".Matches(@"(?&lt;firstname&gt;\w+)\s(\w+)\s(?&lt;lastname&gt;\w+)");
+    /// Assert.AreEqual("John Wilkes Booth", matches[0]);
+    /// Assert.AreEqual("John", matches["firstname"]);
+    /// Assert.AreEqual("Wilkes", matches[1]);
+    /// Assert.AreEqual("Booth", matches["lastname"]);
+    /// Assert.AreEqual(4, matches.Count);
+    /// </example>
+    /// <remarks>
+    /// See http://stackoverflow.com/questions/2250335/differences-among-net-capture-group-match/2251774#2251774 for a good
+    /// explanation of why MatchCollection is so complicated.
+    /// </remarks>
     public class MatchData 
     {
         private List<string> indexcaptures = new List<string>();
@@ -77,7 +97,7 @@ namespace System
         }
     }
 
-    public static class StringRegex
+    public static class StringRegexExtensions
     {
         static readonly Dictionary<char, RegexOptions> _optionChars = new Dictionary<char, RegexOptions> {
             { 'i', RegexOptions.IgnoreCase },
@@ -88,9 +108,77 @@ namespace System
             { 'r', RegexOptions.RightToLeft }
         };
 
-#if DOTNET4
-        static readonly Dictionary<string, Regex> _cache = new Dictionary<string, Regex>(16);
+#if !NET35
+        static readonly ConcurrentDictionary<string, Regex> _cache = new ConcurrentDictionary<string, Regex>();
+
+        static Regex ToRegex(this string pattern)
+        {
+            Regex result;
+            if (_cache.TryGetValue(pattern, out result))
+                return result;
+            else {
+                result = new Regex(pattern);
+                _cache.AddOrUpdate(pattern, result, (key, old) => {
+                    return old;
+                });
+                return result;
+            }
+        }
+
+        static Regex ToRegex(this string pattern, RegexOptions options)
+        {
+            string key = String.Format("{0}-{1}", pattern, GetOptionChars(options));
+
+            Regex result;
+            if (_cache.TryGetValue(key, out result))
+            {
+                return result;
+            }
+            else 
+            {
+                result = new Regex(pattern, options);
+                _cache.AddOrUpdate(key, result, (patternpluskey, old) =>
+                {
+                    if (options != old.Options)
+                        return new Regex(patternpluskey.Substring(0, patternpluskey.LastIndexOf('-')), options);
+
+                    return old;
+                });
+                return result;
+            }
+        }
+
+        public static int CacheCount
+        {
+            get
+            {
+                return _cache.Count;
+            }
+        }
+#else
+        static Regex ToRegex(this string pattern)
+        {
+            return new Regex(pattern);
+        }
+
+        static Regex ToRegex(this string pattern, RegexOptions options)
+        {
+            return new Regex(pattern, options);
+        }
 #endif
+
+        static RegexOptions GetOptions(string options)
+        {
+            return (RegexOptions)options.Select(c => (int)_optionChars[c]).Sum();
+        }
+
+        static string GetOptionChars(RegexOptions options)
+        {
+            return String.Join("", _optionChars.Select<KeyValuePair<char, RegexOptions>, string>(pair =>
+            {
+                return (options & pair.Value) == pair.Value ? pair.Key.ToString() : "";
+            }));
+        }
 
         public static bool IsMatch(this string input, string pattern)
         {
@@ -230,21 +318,6 @@ namespace System
         public static string GSub(this string input, string pattern, string replacement, int startat)
         {
             return pattern.ToRegex().Replace(input, replacement, startat);
-        }
-
-        private static Regex ToRegex(this string pattern)
-        {
-            return new Regex(pattern);
-        }
-
-        private static Regex ToRegex(this string pattern, RegexOptions options)
-        {
-            return new Regex(pattern, options);
-        }
-
-        private static RegexOptions GetOptions(string options)
-        {
-            return (RegexOptions)options.Select(c => (int)_optionChars[c]).Sum();
         }
     }
 }
