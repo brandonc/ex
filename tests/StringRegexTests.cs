@@ -196,6 +196,8 @@ namespace Tests
             var data = @"uuu|iii|ooo|ppp";
             data.MatchesPattern("uuu");
             data.MatchesPattern("uuu", "i");
+            data.MatchesPattern("uuu", "i");
+            data.MatchesPattern("uuu", "i");
             data.MatchesPattern("uuu");
             Assert.AreEqual(startEntities + 2, StringRegexExtensions.CacheCount);
             data.IsPatternMatch("|.+|", "ixc");

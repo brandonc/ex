@@ -9,8 +9,6 @@ using System.Collections;
 using System.Text.RegularExpressions;
 #if !NET35
 using System.Collections.Concurrent;
-using System.Text;
-using System.Threading;
 #endif
 
 namespace System
@@ -63,9 +61,6 @@ namespace System
         {
             get
             {
-                if (namedcaptures == null)
-                    return null;
-
                 Capture result = null;
                 if (namedcaptures == null || !namedcaptures.TryGetValue(name, out result))
                     return null;
@@ -169,7 +164,6 @@ namespace System
                 // that multiple captures in the same group are overwritten.
                 if (Int32.TryParse(name, out tryint))
                 {
-                    
                     this.indexcaptures.Add(group.Captures[group.Captures.Count - 1]);
                 }
                 else
@@ -273,6 +267,9 @@ namespace System
             });
         }
 
+        /// <summary>
+        /// The number of Regex objects that occupy the cache.
+        /// </summary>
         public static int CacheCount
         {
             get
@@ -307,13 +304,18 @@ namespace System
             }));
         }
 
+        /// <summary>
+        /// Tests whether this string matches a string regex pattern
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
         public static bool IsPatternMatch(this string input, string pattern)
         {
             return pattern.ToRegex().IsMatch(input);
         }
 
         /// <summary>
-        /// Tests whether an input string matches a string regex pattern with optional regex options.
+        /// Tests whether this string matches a string regex pattern with optional regex options.
         /// </summary>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
         public static bool IsPatternMatch(this string input, string pattern, string options)
@@ -322,7 +324,7 @@ namespace System
         }
 
         /// <summary>
-        /// Tests whether an input string matches a string regex pattern
+        /// Tests whether this string matches a string regex pattern
         /// </summary>
         public static bool IsPatternMatch(this string input, string pattern, int startat)
         {
@@ -330,7 +332,7 @@ namespace System
         }
 
         /// <summary>
-        /// Tests whether an input string matches a string regex pattern
+        /// Tests whether this string matches a string regex pattern
         /// </summary>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
         public static bool IsPatternMatch(this string input, string pattern, int startat, string options)
@@ -339,7 +341,7 @@ namespace System
         }
 
         /// <summary>
-        /// Gets matches for input that matches a specified regex pattern
+        /// Returns matches within the string that match a specified regex pattern
         /// </summary>
         /// <param name="pattern">The regex pattern to match</param>
         /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
@@ -350,7 +352,7 @@ namespace System
         }
 
         /// <summary>
-        /// Gets matches for input that matches a specified regex pattern with the specified regex options
+        /// Returns matches within the string that match a specified regex pattern with the specified regex options
         /// </summary>
         /// <param name="pattern">The regex pattern to match</param>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
@@ -362,7 +364,7 @@ namespace System
         }
 
         /// <summary>
-        /// Gets matches for input that matches a specified regex pattern beginning at the specified offset
+        /// Returns matches within the string that match a specified regex pattern beginning at the specified offset
         /// </summary>
         /// <param name="pattern">The regex pattern to match</param>
         /// <param name="startat">The offset at which to begin matching</param>
@@ -374,7 +376,7 @@ namespace System
         }
 
         /// <summary>
-        /// Gets matches for input that matches a specified regex pattern beginning at the specified offset with the specified regex options
+        /// Returns matches within the string that match a specified regex pattern beginning at the specified offset with the specified regex options
         /// </summary>
         /// <param name="pattern">The regex pattern to match</param>
         /// <param name="startat">The offset at which to begin matching</param>
@@ -408,11 +410,23 @@ namespace System
             return pattern.ToRegex().Replace(input, delegate(Match arg) { return evaluator(arg); }, 1);
         }
 
+        /// <summary>
+        /// Returns a copy of this string with all occurrences of the specified regex pattern replaced with the specified replacement text
+        /// </summary>
+        /// <param name="pattern">The regex pattern to match</param>
+        /// <param name="replacement">The text replacement to use</param>
+        /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string GSub(this string input, string pattern, string replacement)
         {
             return pattern.ToRegex().Replace(input, replacement);
         }
 
+        /// <summary>
+        /// Returns a copy of this string with all occurrences of the specified regex pattern replaced with the text returned from the give function
+        /// </summary>
+        /// <param name="pattern">The regex pattern to match</param>
+        /// <param name="evaluator">A function that returns either the replacement text or the original string</param>
+        /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string GSub(this string input, string pattern, Func<Match, string> evaluator)
         {
             return pattern.ToRegex().Replace(input, delegate(Match arg) { return evaluator(arg); });
