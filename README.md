@@ -4,10 +4,10 @@
 
 # What It Does #
 
-1. strings have been extended up with Regex-powered methods `IsPatternMatch`, `MatchesPattern`, `Sub`, and `GSub`
-2. The MatchesPattern method returns a new class `MatchData` that simplifies access to captures. It's a little like ruby's class of the same name. See [this answer][1] on stackoverflow for a better explanation of why MatchCollection is so complicated.
+1. strings have been suped up with Regex-powered methods `IsPatternMatch`, `MatchesPattern`, `Sub`, and `GSub`
+2. The MatchesPattern method returns a new class `MatchData` that simplifies access to captures. It's a little like ruby's class of the same name. See [this answer][1] on stackoverflow for a better explanation of why the default implementation of MatchCollection is so complicated.
 3. Any `RegexOptions` can be expressed as a character string
-4. When using .NET 4, regex objects are cached (Uses ConcurrentDictionary)
+4. When using .NET 4, regex objects are cached
 
 # What It Does Not Do #
 
