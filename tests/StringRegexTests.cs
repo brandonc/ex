@@ -89,10 +89,10 @@ namespace Tests
         public void matchdata_includes_multiple_named_captures()
         {
             string pattern = @"(?<firstname>\w+)\s(?<lastname>\w+)";
-            var matches = "Brandon Croft".MatchesPattern(pattern);
+            var matches = "Steven Baldwin".MatchesPattern(pattern);
 
-            Assert.AreEqual(matches["firstname"], "Brandon");
-            Assert.AreEqual(matches["lastname"], "Croft");
+            Assert.AreEqual(matches["firstname"], "Steven");
+            Assert.AreEqual(matches["lastname"], "Baldwin");
         }
 
         [TestMethod]

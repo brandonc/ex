@@ -20,8 +20,8 @@
 
 ### Substitution: ###
 
-    "A man with a plan, panama".GSub("an", "ax");  // "A max with a plax, paxama"
-    "A man with a plan, panama".Sub("an", "ax");  // "A max with a plan, panama"
+    "A man, a plan, a canal, panama".GSub("an", "ax");  // "A max, a plax, a caxal, paxama"
+    "A man, a plan, a canal, panama".Sub("an", "ax");  // "A max, a plan, a canal, panama"
 
 ### Match Data ###
 
