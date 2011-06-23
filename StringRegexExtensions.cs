@@ -1,5 +1,7 @@
-// Uncomment this line if you're compiling with Visual Studio 2008
+// Uncomment the next line if you're compiling with Visual Studio 2008
 // #define NET35
+
+// Use .NET 4.0 to enable thread safe cacheing.
 
 using System.Linq;
 using System.Collections.Generic;
@@ -14,10 +16,10 @@ using System.Threading;
 namespace System
 {
     /// <summary>
-    /// Simplified collection of regex captures.
+    /// A simplified collection of regex captures.
     /// </summary>
     /// <example>
-    /// var matches = "John Wilkes Booth".Matches(@"(?&lt;firstname&gt;\w+)\s(\w+)\s(?&lt;lastname&gt;\w+)");
+    /// var matches = "John Wilkes Booth".MatchesPattern(@"(?&lt;firstname&gt;\w+)\s(\w+)\s(?&lt;lastname&gt;\w+)");
     /// Assert.AreEqual("John Wilkes Booth", matches[0]);
     /// Assert.AreEqual("John", matches["firstname"]);
     /// Assert.AreEqual("Wilkes", matches[1]);
@@ -30,17 +32,33 @@ namespace System
     /// </remarks>
     public class MatchData : IEnumerable<string>
     {
-        private List<string> indexcaptures = new List<string>();
-        private Dictionary<string, string> namedcaptures = null;
+        List<Capture> indexcaptures = new List<Capture>();
+        Dictionary<string, Capture> namedcaptures = null;
 
+        /// <summary>
+        /// Gets a numbered capture value. The first index (0) is always the entire match.
+        /// </summary>
+        /// <param name="index">The index of the numbered capture</param>
+        /// <returns>The value of the specified numbered capture</returns>
         public string this[int index]
         {
             get
             {
-                return indexcaptures[index];
+                try
+                {
+                    return indexcaptures[index].Value;
+                } catch (ArgumentOutOfRangeException ex)
+                {
+                    throw new IndexOutOfRangeException(String.Format("The index {0} was out of range", index), ex);
+                }
             }
         }
 
+        /// <summary>
+        /// Gets a named capture value.
+        /// </summary>
+        /// <param name="name">The name of the named capture</param>
+        /// <returns>The value of the specified named capture</returns>
         public string this[string name]
         {
             get
@@ -48,11 +66,98 @@ namespace System
                 if (namedcaptures == null)
                     return null;
 
-                return namedcaptures[name];
+                Capture result = null;
+                if (namedcaptures == null || !namedcaptures.TryGetValue(name, out result))
+                    return null;
+
+                return result.Value;
             }
         }
 
-        private void AddMatch(Regex regex, Match match)
+        /// <summary>
+        /// Gets the position of the specifed numbered capture
+        /// </summary>
+        /// <param name="index">The index of the numbered capture</param>
+        /// <returns>The position of the capture</returns>
+        public int Begin(int index)
+        {
+            try
+            {
+                Capture cap = indexcaptures[index];
+                return cap.Index;
+            } catch (ArgumentOutOfRangeException ex)
+            {
+                throw new IndexOutOfRangeException(String.Format("The index {0} was out of range", index), ex);
+            }
+        }
+
+        /// <summary>
+        /// Gets the position of the character immediately following the end of the specified numbered capture
+        /// </summary>
+        /// <param name="index">The index of the numbered capture</param>
+        /// <returns>The position of the character immediately following the end of the specified numbered capture</returns>
+        public int End(int index)
+        {
+            try
+            {
+                Capture cap = indexcaptures[index];
+                return cap.Index + cap.Length;
+            } catch (ArgumentOutOfRangeException ex)
+            {
+                throw new IndexOutOfRangeException(String.Format("The index {0} was out of range", index), ex);
+            }
+        }
+
+        /// <summary>
+        /// Gets the position of the named capture
+        /// </summary>
+        /// <param name="name">The name of the named capture</param>
+        /// <returns>The position of the capture</returns>
+        public int Begin(string name)
+        {
+            Capture cap;
+            if(namedcaptures == null || !namedcaptures.TryGetValue(name, out cap))
+                return -1;
+            
+            return cap.Index;
+        }
+
+        /// <summary>
+        /// Gets the position of the character immediately following the end of the specified named capture
+        /// </summary>
+        /// <param name="index">The index of the named capture</param>
+        /// <returns>The position of the character immediately following the end of the specified named capture</returns>
+        public int End(string name)
+        {
+            Capture cap;
+            if (namedcaptures == null || !namedcaptures.TryGetValue(name, out cap))
+                return -1;
+
+            return cap.Index + cap.Length;
+        }
+
+        /// <summary>
+        /// Gets the total number of captures
+        /// </summary>
+        public int Count
+        {
+            get { return indexcaptures.Count + (namedcaptures == null ? 0 : namedcaptures.Count); }
+        }
+
+        /// <summary>
+        /// Retrieves an array of capture names from the matches.
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        public string[] GetNames()
+        {
+            if(namedcaptures == null)
+                return new string[0];
+
+            return this.namedcaptures.Keys.ToArray();
+        }
+
+        void AddMatch(Regex regex, Match match)
         {
             for (int index = 0; index < match.Groups.Count; index++)
             {
@@ -60,14 +165,19 @@ namespace System
                 string name = regex.GroupNameFromNumber(index);
                 int tryint;
 
+                // We only record the LAST capture in this group. This simplifies matching so
+                // that multiple captures in the same group are overwritten.
                 if (Int32.TryParse(name, out tryint))
-                    this.indexcaptures.Add(group.Value);
+                {
+                    
+                    this.indexcaptures.Add(group.Captures[group.Captures.Count - 1]);
+                }
                 else
                 {
                     if (namedcaptures == null)
-                        namedcaptures = new Dictionary<string, string>();
+                        namedcaptures = new Dictionary<string, Capture>();
 
-                    this.namedcaptures[name] = group.Value;
+                    this.namedcaptures[name] = group.Captures[group.Captures.Count - 1];
                 }
             }
         }
@@ -88,24 +198,28 @@ namespace System
             }
         }
 
-        public int Count
+        public IEnumerable<Capture> GetCaptures()
         {
-            get { return indexcaptures.Count + (namedcaptures == null ? 0 : namedcaptures.Count); }
-        }
-
-        IEnumerator<string> GetEnumeratorInternal()
-        {
-            foreach (string capture in indexcaptures)
+            // First return numbered capture values, then 
+            foreach (Capture capture in indexcaptures)
             {
                 yield return capture;
             }
 
             if (namedcaptures != null)
             {
-                foreach (KeyValuePair<string, string> capture in namedcaptures)
+                foreach (KeyValuePair<string, Capture> capture in namedcaptures)
                 {
                     yield return capture.Value;
                 }
+            }
+        }
+
+        IEnumerator<string> GetEnumeratorInternal()
+        {
+            foreach (Capture cap in GetCaptures())
+            {
+                yield return cap.Value;
             }
         }
 
@@ -203,7 +317,7 @@ namespace System
             }));
         }
 
-        public static bool IsMatch(this string input, string pattern)
+        public static bool IsPatternMatch(this string input, string pattern)
         {
             return pattern.ToRegex().IsMatch(input);
         }
@@ -212,7 +326,7 @@ namespace System
         /// Tests whether an input string matches a string regex pattern with optional regex options.
         /// </summary>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static bool IsMatch(this string input, string pattern, string options)
+        public static bool IsPatternMatch(this string input, string pattern, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input);
         }
@@ -220,7 +334,7 @@ namespace System
         /// <summary>
         /// Tests whether an input string matches a string regex pattern
         /// </summary>
-        public static bool IsMatch(this string input, string pattern, int startat)
+        public static bool IsPatternMatch(this string input, string pattern, int startat)
         {
             return pattern.ToRegex().IsMatch(input, startat);
         }
@@ -229,98 +343,79 @@ namespace System
         /// Tests whether an input string matches a string regex pattern
         /// </summary>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static bool IsMatch(this string input, string pattern, int startat, string options)
+        public static bool IsPatternMatch(this string input, string pattern, int startat, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input, startat);
         }
 
-        public static Dictionary<string, int> NamedCaptures(this string pattern)
-        {
-            var re = pattern.ToRegex();
-            var result = new Dictionary<string,int>();
-            Array.ForEach<string>(re.GetGroupNames(), x => result.Add(x, re.GroupNumberFromName(x)));
-
-            return result;
-        }
-
-        public static MatchData Matches(this string input, string pattern)
+        /// <summary>
+        /// Gets matches for input that matches a specified regex pattern
+        /// </summary>
+        /// <param name="pattern">The regex pattern to match</param>
+        /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
+        public static MatchData MatchesPattern(this string input, string pattern)
         {
             var re = pattern.ToRegex();
             return new MatchData(re, re.Matches(input));
         }
 
+        /// <summary>
+        /// Gets matches for input that matches a specified regex pattern with the specified regex options
+        /// </summary>
+        /// <param name="pattern">The regex pattern to match</param>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Matches(this string input, string pattern, string options)
+        /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
+        public static MatchData MatchesPattern(this string input, string pattern, string options)
         {
             var re = pattern.ToRegex(GetOptions(options));
             return new MatchData(re, re.Matches(input));
         }
 
-        public static MatchData Matches(this string input, string pattern, int startat)
+        /// <summary>
+        /// Gets matches for input that matches a specified regex pattern beginning at the specified offset
+        /// </summary>
+        /// <param name="pattern">The regex pattern to match</param>
+        /// <param name="startat">The offset at which to begin matching</param>
+        /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
+        public static MatchData MatchesPattern(this string input, string pattern, int startat)
         {
             var re = pattern.ToRegex();
             return new MatchData(re, re.Matches(input, startat));
         }
 
+        /// <summary>
+        /// Gets matches for input that matches a specified regex pattern beginning at the specified offset with the specified regex options
+        /// </summary>
+        /// <param name="pattern">The regex pattern to match</param>
+        /// <param name="startat">The offset at which to begin matching</param>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Matches(this string input, string pattern, int startat, string options)
+        /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
+        public static MatchData MatchesPattern(this string input, string pattern, int startat, string options)
         {
             var re = pattern.ToRegex(GetOptions(options));
             return new MatchData(re, re.Matches(input, startat));
         }
 
-        public static MatchData Match(this string input, string pattern)
-        {
-            var re = pattern.ToRegex();
-            return new MatchData(re, re.Match(input));
-        }
-
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Match(this string input, string pattern, string options)
-        {
-            var re = pattern.ToRegex(GetOptions(options));
-            return new MatchData(re, re.Match(input));
-        }
-
-        public static MatchData Match(this string input, string pattern, int startat)
-        {
-            var re = pattern.ToRegex();
-            return new MatchData(re, re.Match(input, startat));
-        }
-
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Match(this string input, string pattern, int startat, string options)
-        {
-            var re = pattern.ToRegex(GetOptions(options));
-            return new MatchData(re, re.Match(input, startat));
-        }
-
-        public static MatchData Match(this string input, string pattern, int beginning, int length)
-        {
-            var re = pattern.ToRegex();
-            return new MatchData(re, re.Match(input, beginning, length));
-        }
-
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Match(this string input, string pattern, int beginning, int length, string options)
-        {
-            var re = pattern.ToRegex(GetOptions(options));
-            return new MatchData(re, re.Match(input, beginning, length));
-        }
-
+        /// <summary>
+        /// Returns a copy of this string with the first occurrence of the specified regex pattern replaced with the specified replacement text
+        /// </summary>
+        /// <param name="pattern">The regex pattern to match</param>
+        /// <param name="replacement">The text replacement to use</param>
+        /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string Sub(this string input, string pattern, string replacement)
         {
             return pattern.ToRegex().Replace(input, replacement, 1);
         }
 
-        public static string Sub(this string input, string pattern, MatchEvaluator evaluator)
+        /// <summary>
+        /// Returns a copy of this string with the first occurrence of the specified regex pattern replaced with the specified replacement text
+        /// </summary>
+        /// <param name="pattern">The regex pattern to match</param>
+        /// <param name="replacement">The text replacement to use</param>
+        /// <returns>A copy of this string with specified pattern replaced</returns>
+        public static string Sub(this string input, string pattern, Func<Match, string> evaluator)
         {
-            return pattern.ToRegex().Replace(input, evaluator);
-        }
-
-        public static string Sub(this string input, string pattern, MatchEvaluator evaluator, int startat)
-        {
-            return pattern.ToRegex().Replace(input, evaluator, 1, startat);
+            return pattern.ToRegex().Replace(input, delegate(Match arg) { return evaluator(arg); }, 1);
         }
 
         public static string GSub(this string input, string pattern, string replacement)
@@ -328,19 +423,9 @@ namespace System
             return pattern.ToRegex().Replace(input, replacement);
         }
 
-        public static string Sub(this string input, string pattern, string replacement, int startat)
+        public static string GSub(this string input, string pattern, Func<Match, string> evaluator)
         {
-            return pattern.ToRegex().Replace(input, replacement, 1, startat);
-        }
-
-        public static string GSub(this string input, string pattern, MatchEvaluator evaluator, int startat)
-        {
-            return pattern.ToRegex().Replace(input, evaluator, startat);
-        }
-
-        public static string GSub(this string input, string pattern, string replacement, int startat)
-        {
-            return pattern.ToRegex().Replace(input, replacement, startat);
+            return pattern.ToRegex().Replace(input, delegate(Match arg) { return evaluator(arg); });
         }
     }
 }
