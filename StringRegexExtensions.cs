@@ -241,7 +241,6 @@ namespace System
             { 's', RegexOptions.Singleline },
             { 'x', RegexOptions.IgnorePatternWhitespace },
             { 'c', RegexOptions.Compiled },
-            { 'e', RegexOptions.ExplicitCapture },
             { 'r', RegexOptions.RightToLeft }
         };
 
@@ -306,7 +305,9 @@ namespace System
 
         static RegexOptions GetOptions(string options)
         {
-            return (RegexOptions)options.Select(c => (int)_optionChars[c]).Sum();
+            return (RegexOptions)options.Select(c => {
+                try { return (int)_optionChars[c]; } catch (KeyNotFoundException) { return 0; }
+            }).Sum();
         }
 
         static string GetOptionChars(RegexOptions options)
@@ -325,7 +326,7 @@ namespace System
         /// <summary>
         /// Tests whether an input string matches a string regex pattern with optional regex options.
         /// </summary>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
         public static bool IsPatternMatch(this string input, string pattern, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input);
@@ -342,7 +343,7 @@ namespace System
         /// <summary>
         /// Tests whether an input string matches a string regex pattern
         /// </summary>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
         public static bool IsPatternMatch(this string input, string pattern, int startat, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input, startat);
@@ -363,7 +364,7 @@ namespace System
         /// Gets matches for input that matches a specified regex pattern with the specified regex options
         /// </summary>
         /// <param name="pattern">The regex pattern to match</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
         public static MatchData MatchesPattern(this string input, string pattern, string options)
         {
@@ -388,7 +389,7 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to match</param>
         /// <param name="startat">The offset at which to begin matching</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
         public static MatchData MatchesPattern(this string input, string pattern, int startat, string options)
         {

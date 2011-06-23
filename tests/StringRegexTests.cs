@@ -57,7 +57,7 @@ namespace Tests
         [TestMethod]
         public void matchdata_includes_named_captures()
         {
-            var matches = "fuzbarfuzbaz".MatchesPattern("ba(?<named>r|z)", "e");
+            var matches = "fuzbarfuzbaz".MatchesPattern("ba(?<named>r|z)");
             Assert.AreEqual(3, matches.Count);
             Assert.AreEqual("bar", matches[0]);
             Assert.AreEqual("baz", matches[1]);
