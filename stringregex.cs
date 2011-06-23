@@ -44,7 +44,10 @@ namespace System
                     if (namedcaptures == null)
                         namedcaptures = new Dictionary<string, string>();
 
-                    this.namedcaptures.Add(name, group.Value);
+                    if (namedcaptures.ContainsKey(name))
+                        this.namedcaptures[name] = group.Value;
+                    else
+                        this.namedcaptures.Add(name, group.Value);
                 }
             }
         }

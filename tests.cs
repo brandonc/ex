@@ -32,6 +32,16 @@ namespace test
         }
 
         [TestMethod]
+        public void TestExplicitCaptureMatch()
+        {
+            var matches = "ba(?<named>r|z)".Matches("fuzbarfuzbaz", "e");
+            Assert.AreEqual(3, matches.Count);
+            Assert.AreEqual("bar", matches[0]);
+            Assert.AreEqual("baz", matches[1]);
+            Assert.AreEqual("z", matches["named"]);
+        }
+
+        [TestMethod]
         public void TestIsMatch()
         {
             Assert.IsTrue("f(uz|oo)bar".IsMatch("fuzbarfoobar"));
