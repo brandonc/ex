@@ -2,6 +2,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text.RegularExpressions;
+#if DOTNET4
+using System.Collections.Concurrent;
+#endif
 
 namespace System
 {
@@ -76,6 +79,19 @@ namespace System
 
     public static class StringRegex
     {
+        static readonly Dictionary<char, RegexOptions> _optionChars = new Dictionary<char, RegexOptions> {
+            { 'i', RegexOptions.IgnoreCase },
+            { 's', RegexOptions.Singleline },
+            { 'x', RegexOptions.IgnorePatternWhitespace },
+            { 'c', RegexOptions.Compiled },
+            { 'e', RegexOptions.ExplicitCapture },
+            { 'r', RegexOptions.RightToLeft }
+        };
+
+#if DOTNET4
+        static readonly Dictionary<string, Regex> _cache = new Dictionary<string, Regex>(16);
+#endif
+
         public static bool IsMatch(this string input, string pattern)
         {
             return pattern.ToRegex().IsMatch(input);
@@ -110,8 +126,6 @@ namespace System
         public static Dictionary<string, int> NamedCaptures(this string pattern)
         {
             var re = pattern.ToRegex();
-            string[] names = re.GetGroupNames();
-            
             var result = new Dictionary<string,int>();
             Array.ForEach<string>(re.GetGroupNames(), x => result.Add(x, re.GroupNumberFromName(x)));
 
@@ -230,15 +244,7 @@ namespace System
 
         private static RegexOptions GetOptions(string options)
         {
-            RegexOptions opts = RegexOptions.None;
-            opts |= options.IndexOf('i') >= 0 ? RegexOptions.IgnoreCase : RegexOptions.None;
-            opts |= options.IndexOf('s') >= 0 ? RegexOptions.Singleline : RegexOptions.None;
-            opts |= options.IndexOf('x') >= 0 ? RegexOptions.IgnorePatternWhitespace : RegexOptions.None;
-            opts |= options.IndexOf('c') >= 0 ? RegexOptions.Compiled : RegexOptions.None;
-            opts |= options.IndexOf('e') >= 0 ? RegexOptions.ExplicitCapture : RegexOptions.None;
-            opts |= options.IndexOf('r') >= 0 ? RegexOptions.RightToLeft : RegexOptions.None;
-
-            return opts;
+            return (RegexOptions)options.Select(c => (int)_optionChars[c]).Sum();
         }
     }
 }
