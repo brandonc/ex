@@ -76,7 +76,7 @@ namespace System
 
     public static class StringRegex
     {
-        public static bool IsMatch(this string pattern, string input)
+        public static bool IsMatch(this string input, string pattern)
         {
             return pattern.ToRegex().IsMatch(input);
         }
@@ -85,7 +85,7 @@ namespace System
         /// Tests whether an input string matches a string regex pattern with optional regex options.
         /// </summary>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static bool IsMatch(this string pattern, string input, string options)
+        public static bool IsMatch(this string input, string pattern, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input);
         }
@@ -93,7 +93,7 @@ namespace System
         /// <summary>
         /// Tests whether an input string matches a string regex pattern
         /// </summary>
-        public static bool IsMatch(this string pattern, string input, int startat)
+        public static bool IsMatch(this string input, string pattern, int startat)
         {
             return pattern.ToRegex().IsMatch(input, startat);
         }
@@ -102,7 +102,7 @@ namespace System
         /// Tests whether an input string matches a string regex pattern
         /// </summary>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static bool IsMatch(this string pattern, string input, int startat, string options)
+        public static bool IsMatch(this string input, string pattern, int startat, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input, startat);
         }
@@ -118,66 +118,66 @@ namespace System
             return result;
         }
 
-        public static MatchData Matches(this string pattern, string input)
+        public static MatchData Matches(this string input, string pattern)
         {
             var re = pattern.ToRegex();
             return new MatchData(re, re.Matches(input));
         }
 
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Matches(this string pattern, string input, string options)
+        public static MatchData Matches(this string input, string pattern, string options)
         {
             var re = pattern.ToRegex(GetOptions(options));
             return new MatchData(re, re.Matches(input));
         }
 
-        public static MatchData Matches(this string pattern, string input, int startat)
+        public static MatchData Matches(this string input, string pattern, int startat)
         {
             var re = pattern.ToRegex();
             return new MatchData(re, re.Matches(input, startat));
         }
 
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Matches(this string pattern, string input, int startat, string options)
+        public static MatchData Matches(this string input, string pattern, int startat, string options)
         {
             var re = pattern.ToRegex(GetOptions(options));
             return new MatchData(re, re.Matches(input, startat));
         }
 
-        public static MatchData Match(this string pattern, string input)
+        public static MatchData Match(this string input, string pattern)
         {
             var re = pattern.ToRegex();
             return new MatchData(re, re.Match(input));
         }
 
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Match(this string pattern, string input, string options)
+        public static MatchData Match(this string input, string pattern, string options)
         {
             var re = pattern.ToRegex(GetOptions(options));
             return new MatchData(re, re.Match(input));
         }
 
-        public static MatchData Match(this string pattern, string input, int startat)
+        public static MatchData Match(this string input, string pattern, int startat)
         {
             var re = pattern.ToRegex();
             return new MatchData(re, re.Match(input, startat));
         }
 
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Match(this string pattern, string input, int startat, string options)
+        public static MatchData Match(this string input, string pattern, int startat, string options)
         {
             var re = pattern.ToRegex(GetOptions(options));
             return new MatchData(re, re.Match(input, startat));
         }
 
-        public static MatchData Match(this string pattern, string input, int beginning, int length)
+        public static MatchData Match(this string input, string pattern, int beginning, int length)
         {
             var re = pattern.ToRegex();
             return new MatchData(re, re.Match(input, beginning, length));
         }
 
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, e: explicit capture only, r: right to left</param>
-        public static MatchData Match(this string pattern, string input, int beginning, int length, string options)
+        public static MatchData Match(this string input, string pattern, int beginning, int length, string options)
         {
             var re = pattern.ToRegex(GetOptions(options));
             return new MatchData(re, re.Match(input, beginning, length));
