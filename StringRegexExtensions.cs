@@ -176,11 +176,6 @@ namespace System
             }
         }
 
-        public MatchData(Regex regex, Match match)
-        {
-            AddMatch(regex, match);
-        }
-
         public MatchData(Regex regex, MatchCollection matches)
         {
             if (matches == null || matches.Count == 0)
@@ -294,14 +289,6 @@ namespace System
             return (RegexOptions)options.Select(c => {
                 try { return (int)_optionChars[c]; } catch (KeyNotFoundException) { return 0; }
             }).Sum();
-        }
-
-        static string GetOptionChars(RegexOptions options)
-        {
-            return String.Join("", _optionChars.Select<KeyValuePair<char, RegexOptions>, string>(pair =>
-            {
-                return (options & pair.Value) == pair.Value ? pair.Key.ToString() : "";
-            }));
         }
 
         /// <summary>

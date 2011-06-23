@@ -163,6 +163,38 @@ namespace Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(IndexOutOfRangeException))]
+        public void matchdata_invalid_begin_index_throws_indexoutofrange()
+        {
+            var matches = "Jon Bon Jovie".MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
+            int pos = matches.Begin(2);
+        }
+
+        [TestMethod]
+        public void matchdata_invalid_begin_named_returns_negative_1()
+        {
+            var matches = "Jon Bon Jovie".MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
+            Assert.AreEqual(-1, matches.Begin("middlename"));
+        }
+
+        [TestMethod]
+        public void invalid_options_are_ignored()
+        {
+            var matches = "JON BON JOVIE".MatchesPattern(@"(?<firstname>\w+)   (?# First name)" +
+                                                         @"\s(\w+)\s           (?# Middle name surrounded by spaces)" +
+                                                         @"(?<lastname>\w+)    (?# Last name)", "ikx");
+
+            Assert.AreEqual(4, matches.Count);
+        }
+
+        [TestMethod]
+        public void matchdata_only_contains_matches_found_after_index()
+        {
+            var matches = "I Love You Jon Bon Jovie".MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)", "I Love You".Length);
+            Assert.AreEqual(4, matches.Count);
+        }
+
+        [TestMethod]
         public void matchdata_invalid_name_returns_null()
         {
             var matches = "John Wilkes Booth".MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
