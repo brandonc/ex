@@ -26,7 +26,7 @@
 ### Match Data ###
 
     string fullname = "John Wilkes Booth";
-    var m = fullname.MatchesPattern(@"(?&lt;firstname&gt;\w+)\s(\w+)\s(?&lt;lastname&gt;\w+)");
+    var m = fullname.MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
 
     // "John" == m["firstname"]
     // "Booth" == m["lastname"]
