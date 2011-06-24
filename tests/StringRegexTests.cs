@@ -1,4 +1,6 @@
-﻿using System;
+﻿// #define NET35
+
+using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,74 +81,137 @@ namespace Tests
         [TestMethod]
         public void scan_yields_ungrouped_strings()
         {
-            var words = "i am a sentence".Scan(@"\w+");
-            Assert.AreEqual(4, words.Count());
+            "i am a sentence".Scan(@"\w+", w =>
+            {
+                Assert.IsFalse(String.IsNullOrEmpty(w));
+            });
         }
 
         [TestMethod]
-        public void scan_yields_grouped_strings()
+        public void last_index_of_pattern_returns_last_index()
         {
-            var words = "hello world!".Scan(@"(..)(..)").ToArray();
-            Assert.AreEqual("he", words[0][0]);
-            Assert.AreEqual("ll", words[0][1]);
-
-            Assert.AreEqual("o ", words[1][0]);
-            Assert.AreEqual("wo", words[1][1]);
-
-            Assert.AreEqual("rl", words[2][0]);
-            Assert.AreEqual("d!", words[2][1]);
-
-            Assert.AreEqual(words.Length, 3);
-            Assert.AreEqual(words[0].Length, 2);
-            Assert.AreEqual(words[1].Length, 2);
-            Assert.AreEqual(words[2].Length, 2);
+            Assert.AreEqual(7, "hello world".LastIndexOfPattern("[aeiou]"));
         }
 
         [TestMethod]
-        public void scan_with_nested_groups_yields_grouped_strings()
+        public void scan_with_one_capture_and_two_parameters_yields_one_strings()
         {
-            var words = "hello world!".Scan(@"(.(.).)").ToArray();
-            Assert.AreEqual("hel", words[0][0]);
-            Assert.AreEqual("e", words[0][1]);
-
-            Assert.AreEqual("lo ", words[1][0]);
-            Assert.AreEqual("o", words[1][1]);
-
-            Assert.AreEqual("wor", words[2][0]);
-            Assert.AreEqual("o", words[2][1]);
-
-            Assert.AreEqual("ld!", words[3][0]);
-            Assert.AreEqual("d", words[3][1]);
-
-            Assert.AreEqual(words.Length, 4);
-            Assert.AreEqual(words[0].Length, 2);
-            Assert.AreEqual(words[1].Length, 2);
-            Assert.AreEqual(words[2].Length, 2);
-            Assert.AreEqual(words[3].Length, 2);
+            "hello world!".Scan(@"(..)", (c1, c2) =>
+            {
+                Assert.AreEqual(2, c1.Length);
+                Assert.IsNull(c2);
+            });
         }
 
         [TestMethod]
-        public void slice_returns_first_match()
+        public void scan_with_three_captures_and_two_parameters_yields_two_strings()
         {
-            Assert.AreEqual("el", "hello, world".Slice(@"[aeiou](.)"));
+            "hello world!".Scan(@"(..)(..)(..)", (c1, c2) =>
+            {
+                Assert.AreEqual(2, c1.Length);
+                Assert.AreEqual(2, c2.Length);
+            });
         }
 
         [TestMethod]
-        public void slice_returns_first_numbered_match()
+        public void scan_with_four_captures_and_four_parameters_yields_four_strings()
         {
-            Assert.AreEqual("l", "hello, world".Slice(@"[aeiou](.)", 1));
+            "hello world!".Scan(@"(..)(..)(..)(..)", (c1, c2, c3, c4) =>
+            {
+                Assert.AreEqual(2, c1.Length);
+                Assert.AreEqual(2, c2.Length);
+                Assert.AreEqual(2, c3.Length);
+                Assert.AreEqual(2, c4.Length);
+            });
         }
 
         [TestMethod]
-        public void slice_returns_first_named_match()
+        public void scan_with_groups_but_no_captures_yields_first_group()
         {
-            Assert.AreEqual("l", "hello, world".Slice(@"[aeiou](?<consonant>.)", "consonant"));
+            int count = 0;
+            "hello world!".Scan("(..)(..)", c =>
+            {
+                // Only the first capture is given
+                Assert.AreEqual(2, c.Length);
+                count++;
+            });
+
+            Assert.AreEqual("hello world!".Length / 4, count);
         }
 
         [TestMethod]
-        public void slice_does_backreferencing()
+        public void scan_with_subgroups_yields_two_strings()
         {
-            Assert.AreEqual("ell", "hello, world".Slice(@"[aeiou](.)\1"));
+            int count = 0;
+            "hello world!".Scan("(.(.).)", (c1, c2) =>
+            {
+                // Only the first capture is given
+                Assert.AreEqual(3, c1.Length);
+                Assert.AreEqual(1, c2.Length);
+                count++;
+            });
+
+            Assert.AreEqual(4, count);
+        }
+
+        [TestMethod]
+        public void scan_with_two_parameters_returns_two_outermost_subgroups()
+        {
+            int count = 0;
+            "hello world!".Scan("(.(.(.).).)(.)", (c1, c2) =>
+            {
+                Assert.AreEqual(5, c1.Length);
+                Assert.AreEqual(3, c2.Length);
+                count++;
+            });
+
+            Assert.AreEqual(2, count);
+        }
+
+        [TestMethod]
+        public void scan_with_four_parameters_returns_all_captures()
+        {
+            "hello world!".Scan("(.(.(.).).)(.)", (c1, c2, c3, c4) =>
+            {
+                Assert.AreEqual(5, c1.Length);  // first group, outermost capture
+                Assert.AreEqual(3, c2.Length);  // first group, inner capture
+                Assert.AreEqual(1, c3.Length);  // first group, innermost capture
+                Assert.AreEqual(1, c4.Length);  // second capture
+            });
+        }
+
+        [TestMethod]
+        public void partition_returns_correct_array()
+        {
+            var part = "goodbye, cruel world!".Partition("ue");
+            Assert.AreEqual(3, part.Length);
+            Assert.AreEqual("goodbye, cr", part[0]);
+            Assert.AreEqual("ue", part[1]);
+            Assert.AreEqual("l world!", part[2]);
+        }
+
+        [TestMethod]
+        public void find_pattern_returns_first_match()
+        {
+            Assert.AreEqual("el", "hello, world".FindPattern(@"[aeiou](.)"));
+        }
+
+        [TestMethod]
+        public void find_pattern_returns_first_numbered_match()
+        {
+            Assert.AreEqual("l", "hello, world".FindPatternCapture(@"[aeiou](.)", 1));
+        }
+
+        [TestMethod]
+        public void find_pattern_returns_first_named_match()
+        {
+            Assert.AreEqual("l", "hello, world".FindPatternCapture(@"[aeiou](?<consonant>.)", "consonant"));
+        }
+
+        [TestMethod]
+        public void find_pattern_does_backreferencing()
+        {
+            Assert.AreEqual("ell", "hello, world".FindPattern(@"[aeiou](.)\1"));
         }
 
         [TestMethod]

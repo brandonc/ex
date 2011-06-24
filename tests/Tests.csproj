@@ -9,7 +9,7 @@
     <ProjectGuid>{A055BDDA-0E75-4369-AFC1-A46031AA4846}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>test</RootNamespace>
+    <RootNamespace>Tests</RootNamespace>
     <AssemblyName>test</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
