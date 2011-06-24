@@ -296,6 +296,33 @@ namespace Tests
         }
 
         [TestMethod]
+        public void httpheaders_can_be_scanned()
+        {
+            string[] headersnames = { "Server", "Date", "Content-Type", "Transfer-Encoding", "Connection", "Status", "Etag", "X-Runtime", "Cache-Control", "Strict-Transport-Security", "Content-Encoding" };
+            int found = 0;
+            @"HTTP/1.1 200 OK
+Server: nginx/1.0.4
+Date: Fri, 24 Jun 2011 21:52:36 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Status: 200 OK
+Etag: 924990f60843c36a22f65ec789ea33f3
+X-Runtime: 8ms
+Cache-Control: private, max-age=0, must-revalidate
+Strict-Transport-Security: max-age=2592000
+Content-Encoding: gzip"
+             .Scan(@"([a-z\-]+): (.+)", "i", (name, value) =>
+             {
+                 Assert.IsTrue(Array.IndexOf<string>(headersnames, name) >= 0);
+                 Assert.IsFalse(String.IsNullOrEmpty(value));
+                 found++;
+             });
+
+            Assert.AreEqual(11, found);
+        }
+
+        [TestMethod]
         public void matchdata_can_be_enumerated()
         {
             var matches = "John Wilkes Booth".MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");

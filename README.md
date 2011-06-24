@@ -29,6 +29,14 @@
         "i"   // RegexOptions are expressed as a character string (see below for reference)
     ); // Returns true
 
+### Find the first match ###
+
+    "haystack needle haystack".FindPattern(@"\s(needle)\s");  // returns " needle "
+
+### Find the first match, but return the first capture group.
+
+    "haystack needle haystack".FindPattern(@"\s(needle)\s", 1);  // returns "needle"
+
 ### Substitution: ###
 
     // Replace all with GSub
@@ -47,6 +55,26 @@
             return "Steven Baldwin";
         }
     ); // returns "Steven Baldwin, Steven Baldwin, Steven Baldwin"
+
+### Scan: ###
+
+    string headers = @"HTTP/1.1 200 OK
+    Server: nginx/1.0.4
+    Date: Fri, 24 Jun 2011 21:52:36 GMT
+    Content-Type: text/html; charset=utf-8
+    Transfer-Encoding: chunked
+    Connection: keep-alive
+    Status: 200 OK
+    Etag: 924990f60843c36a22f65ec789ea33f3
+    X-Runtime: 8ms
+    Cache-Control: private, max-age=0, must-revalidate
+    Strict-Transport-Security: max-age=2592000
+    Content-Encoding: gzip"
+    
+    headers.Scan(@"([a-zA-Z\-]+): (.+)", (name, value) =>
+    {
+        // name, value are both strings containing the next captured values
+    });
 
 ### Match Data ###
 
