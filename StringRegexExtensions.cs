@@ -1,7 +1,10 @@
-// Uncomment the next line if you're compiling with Visual Studio 2008
+// Uncomment the next line depending on your environment (Mono, Visual Studio 2008, .NET 3.5)
 // #define NET35
 
 // Use .NET 4.0 to enable thread safe cacheing.
+
+
+// Copyright (c)2011 Brandon Croft and contributors
 
 using System.Linq;
 using System.Collections.Generic;
@@ -176,25 +179,15 @@ namespace System
             }
         }
 
-        public MatchData(Regex regex, MatchCollection matches)
+        IEnumerable<Capture> GetCaptures()
         {
-            if (matches == null || matches.Count == 0)
-                return;
-
-            foreach (Match match in matches)
-            {
-                AddMatch(regex, match);
-            }
-        }
-
-        public IEnumerable<Capture> GetCaptures()
-        {
-            // First return numbered capture values, then 
+            // First return numbered capture values...
             foreach (Capture capture in indexcaptures)
             {
                 yield return capture;
             }
 
+            // ...then return named captures
             if (namedcaptures != null)
             {
                 foreach (KeyValuePair<string, Capture> capture in namedcaptures)
@@ -220,6 +213,17 @@ namespace System
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumeratorInternal();
+        }
+
+        public MatchData(Regex regex, MatchCollection matches)
+        {
+            if (matches == null || matches.Count == 0)
+                return;
+
+            foreach (Match match in matches)
+            {
+                AddMatch(regex, match);
+            }
         }
     }
 
