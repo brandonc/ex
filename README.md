@@ -1,6 +1,6 @@
 # ex #
 
-> A drop-in c# extension class that greatly simplifies framework regular expressions.
+> A well-tested c# extension class that makes regular expressions evaluation fun again.
 
 # What It Does #
 
@@ -37,17 +37,34 @@
     // Replace first with Sub
     "A man, a plan, a canal, panama".Sub("a.", "ax");  // "A max, a plan, a canal, panama"
 
+    // Replace all using a lambda evaluator (no need for MatchEvaluator delegate!)
+    var actors = "Alec Baldwin, Daniel Baldwin, William Baldwin";
+    actors.GSub(
+        @"(?<firstname>\w+)\s(?<lastname>\w+)",
+        match =>
+        {
+            // Replaces any name found with "Steven Baldwin"
+            return "Steven Baldwin";
+        }
+    ); // returns "Steven Baldwin, Steven Baldwin, Steven Baldwin"
+
 ### Match Data ###
+
+`MatchData` is a replacement for `MatchCollection` except it's actually a joy to use. You can use it as a dictionary of captures or to retrieve capture details. It only has a minor limitation compared to `MatchCollection`, and that limitation is a corner case.
 
     string fullname = "Lee Harvey Oswald";
     var m = fullname.MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
 
     // m["firstname"] == "Lee"
     // m["lastname"] == "Oswald"
-    // m[0] == "Lee Harvey Oswald"  (First element is always the entire match)
-    // m[1] == "Harvey"             (Second element is always the first numbered match)
+    // m[0] == "Lee Harvey Oswald"  (The first element is always the entire match [ask Larry Wall])
+    // m[1] == "Harvey"             (The second element is always the first numbered match)
+    
     // m.Begin(1) == 4              (This is the beginning offset of "Harvey")
-    // m.End(1) == 10               (This is the end offset "Harvey")
+    // m.End(1) == 10               (This is the end offset of "Harvey")
+
+    // m.Begin("lastname") == 11    (This is the beginning offset of "Oswald")
+    // m.End("lastname") == 17      (This is the end offset of "Oswald")
 
 Isn't this refreshing?
 
@@ -62,5 +79,5 @@ Isn't this refreshing?
 Thank you to [SLaks][2] at [codereview.stackexchange.com][3] for his helpful review.
 
 [1]: http://stackoverflow.com/questions/2250335/differences-among-net-capture-group-match/2251774#2251774
-[2]: http://codereview.stackexchange.com/users/4994/slaks
+[2]: http://stackoverflow.com/users/34397/slaks
 [3]: http://codereview.stackexchange.com

@@ -93,6 +93,8 @@ namespace Tests
             Assert.AreEqual("Harvey", m[1]);
             Assert.AreEqual(4, m.Begin(1));
             Assert.AreEqual(10, m.End(1));
+            Assert.AreEqual(11, m.Begin("lastname"));
+            Assert.AreEqual(17, m.End("lastname"));
 
         }
 
