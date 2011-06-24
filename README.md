@@ -1,6 +1,6 @@
 # ex #
 
-> A well-tested c# extension class that makes regular expressions evaluation fun again.
+> The ruby-jealous c# extension class that makes regular expressions fun again.
 
 # What It Does #
 
@@ -35,7 +35,7 @@
 
 ### Find the first match, but return the first capture group.
 
-    "haystack needle haystack".FindPattern(@"\s(needle)\s", 1);  // returns "needle"
+    "haystack needle haystack".FindPatternCapture(@"\s(needle)\s", 1);  // returns "needle"
 
 ### Substitution: ###
 
@@ -68,7 +68,7 @@
         // called once for each word, with 'w' containing the match value.
     });
 
-Captures and capture groups, if used, are given as parameters.
+Captures and capture groups, if used, are given as parameters!
 
     string response = @"HTTP/1.1 200 OK
         Server: nginx/1.0.4

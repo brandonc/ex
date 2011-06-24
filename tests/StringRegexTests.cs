@@ -253,6 +253,9 @@ namespace Tests
                 @"^adam (&|and) (?<someone_else>.+$)",
                 "i"   // RegexOptions are expressed as a character string (see below for reference)
             )["someone_else"]); // "STEVE"
+
+            Assert.AreEqual("needle", "haystack needle haystack".FindPatternCapture(@"\s(needle)\s", 1));
+            Assert.AreEqual(" needle ", "haystack needle haystack".FindPattern(@"\sneedle\s"));
         }
 
         [TestMethod]
