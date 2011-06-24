@@ -77,6 +77,79 @@ namespace Tests
         }
 
         [TestMethod]
+        public void scan_yields_ungrouped_strings()
+        {
+            var words = "i am a sentence".Scan(@"\w+");
+            Assert.AreEqual(4, words.Count());
+        }
+
+        [TestMethod]
+        public void scan_yields_grouped_strings()
+        {
+            var words = "hello world!".Scan(@"(..)(..)").ToArray();
+            Assert.AreEqual("he", words[0][0]);
+            Assert.AreEqual("ll", words[0][1]);
+
+            Assert.AreEqual("o ", words[1][0]);
+            Assert.AreEqual("wo", words[1][1]);
+
+            Assert.AreEqual("rl", words[2][0]);
+            Assert.AreEqual("d!", words[2][1]);
+
+            Assert.AreEqual(words.Length, 3);
+            Assert.AreEqual(words[0].Length, 2);
+            Assert.AreEqual(words[1].Length, 2);
+            Assert.AreEqual(words[2].Length, 2);
+        }
+
+        [TestMethod]
+        public void scan_with_nested_groups_yields_grouped_strings()
+        {
+            var words = "hello world!".Scan(@"(.(.).)").ToArray();
+            Assert.AreEqual("hel", words[0][0]);
+            Assert.AreEqual("e", words[0][1]);
+
+            Assert.AreEqual("lo ", words[1][0]);
+            Assert.AreEqual("o", words[1][1]);
+
+            Assert.AreEqual("wor", words[2][0]);
+            Assert.AreEqual("o", words[2][1]);
+
+            Assert.AreEqual("ld!", words[3][0]);
+            Assert.AreEqual("d", words[3][1]);
+
+            Assert.AreEqual(words.Length, 4);
+            Assert.AreEqual(words[0].Length, 2);
+            Assert.AreEqual(words[1].Length, 2);
+            Assert.AreEqual(words[2].Length, 2);
+            Assert.AreEqual(words[3].Length, 2);
+        }
+
+        [TestMethod]
+        public void slice_returns_first_match()
+        {
+            Assert.AreEqual("el", "hello, world".Slice(@"[aeiou](.)"));
+        }
+
+        [TestMethod]
+        public void slice_returns_first_numbered_match()
+        {
+            Assert.AreEqual("l", "hello, world".Slice(@"[aeiou](.)", 1));
+        }
+
+        [TestMethod]
+        public void slice_returns_first_named_match()
+        {
+            Assert.AreEqual("l", "hello, world".Slice(@"[aeiou](?<consonant>.)", "consonant"));
+        }
+
+        [TestMethod]
+        public void slice_does_backreferencing()
+        {
+            Assert.AreEqual("ell", "hello, world".Slice(@"[aeiou](.)\1"));
+        }
+
+        [TestMethod]
         public void readme_examples_work()
         {
             Assert.AreEqual("A max, axplax, axcaxax, paxaxa", "A man, a plan, a canal, panama".GSub("a.", "ax"));
@@ -96,6 +169,25 @@ namespace Tests
             Assert.AreEqual(11, m.Begin("lastname"));
             Assert.AreEqual(17, m.End("lastname"));
 
+            string actors = @"Colin Firth,
+							  Daniel Day-Lewis,
+							  Sean Penn,
+							  Will Smith,
+							  Ryan Gosling";
+
+            Assert.IsFalse(actors.IsPatternMatch("(Alec|Steven|William|Daniel) Baldwin"));
+
+            string input = "80304-6667";
+
+            var postalcode = input.MatchesPattern(@"^(\d{5})\-(\d{4})$");
+			Assert.AreEqual("80304", postalcode[1]);
+			Assert.AreEqual("6667", postalcode[2]);
+            Assert.AreEqual("80304-6667", postalcode[0]);
+
+            Assert.AreEqual("STEVE", "ADAM AND STEVE".MatchesPattern(
+                @"^adam (&|and) (?<someone_else>.+$)",
+                "i"   // RegexOptions are expressed as a character string (see below for reference)
+            )["someone_else"]); // "STEVE"
         }
 
         [TestMethod]

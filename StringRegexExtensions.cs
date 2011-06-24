@@ -225,6 +225,11 @@ namespace System
                 AddMatch(regex, match);
             }
         }
+
+        public MatchData(Regex regex, Match match)
+        {
+            AddMatch(regex, match);
+        }
     }
 
     public static class StringRegexExtensions
@@ -329,7 +334,7 @@ namespace System
         public static bool IsPatternMatch(this string input, string pattern, int startat, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input, startat);
-        }
+        }      
 
         /// <summary>
         /// Returns matches within the string that match a specified regex pattern
@@ -421,6 +426,52 @@ namespace System
         public static string GSub(this string input, string pattern, Func<Match, string> evaluator)
         {
             return pattern.ToRegex().Replace(input, delegate(Match arg) { return evaluator(arg); });
+        }
+
+        public static string[][] Scan(this string input, string pattern)
+        {
+            return ScanInternal(input, pattern).ToArray();
+        }
+
+        public static string Slice(this string input, string pattern)
+        {
+            return input.MatchPattern(pattern).First();
+        }
+
+        public static string Slice(this string input, string pattern, int capture)
+        {
+            try { return input.MatchPattern(pattern)[capture]; } catch (IndexOutOfRangeException) { return null; }
+        }
+
+        public static string Slice(this string input, string pattern, string capture)
+        {
+            return input.MatchPattern(pattern)[capture];
+        }
+
+        static IEnumerable<string[]> ScanInternal(this string input, string pattern)
+        {
+            var matches = pattern.ToRegex().Matches(input);
+            foreach (Match match in matches)
+            {
+                if (match.Groups.Count > 1)
+                {
+                    List<string> group = new List<string>(match.Groups.Count - 1);
+                    for (int index = 1; index < match.Groups.Count; index++)
+                        group.Add(match.Groups[index].Value);
+
+                    yield return group.ToArray();
+                } else
+                {
+                    yield return new string[] { match.Value };
+                }
+            }
+        }
+
+        // Single match, used by Slice
+        static MatchData MatchPattern(this string input, string pattern)
+        {
+            var re = pattern.ToRegex();
+            return new MatchData(re, re.Match(input));
         }
     }
 }
