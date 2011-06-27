@@ -5,6 +5,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Net;
+using System.IO;
 
 namespace Tests
 {
@@ -67,9 +69,9 @@ namespace Tests
         }
 
         [TestMethod]
-        public void ispatternmatch_matches()
+        public void HasPattern_matches()
         {
-            Assert.IsTrue("fuzbarfoobar".IsPatternMatch("f(uz|oo)bar"));
+            Assert.IsTrue("fuzbarfoobar".HasPattern("f(uz|oo)bar"));
         }
 
         [TestMethod]
@@ -199,13 +201,7 @@ namespace Tests
         [TestMethod]
         public void find_pattern_returns_first_numbered_match()
         {
-            Assert.AreEqual("l", "hello, world".FindPatternCapture(@"[aeiou](.)", 1));
-        }
-
-        [TestMethod]
-        public void find_pattern_returns_first_named_match()
-        {
-            Assert.AreEqual("l", "hello, world".FindPatternCapture(@"[aeiou](?<consonant>.)", "consonant"));
+            Assert.AreEqual("l", "hello, world".FindPattern(@"[aeiou](.)", 1));
         }
 
         [TestMethod]
@@ -219,8 +215,8 @@ namespace Tests
         {
             Assert.AreEqual("A max, axplax, axcaxax, paxaxa", "A man, a plan, a canal, panama".GSub("a.", "ax"));
             Assert.AreEqual("A max, a plan, a canal, panama", "A man, a plan, a canal, panama".Sub("a.", "ax"));
-            Assert.IsTrue("Adam & Steve".IsPatternMatch(@"Adam (&|and) (?<someone_else>\w+)"));
-            Assert.IsTrue("ADAM AND STEVE".IsPatternMatch(@"adam (&|and) (?<someone_else>\w+)", "i"));
+            Assert.IsTrue("Adam & Steve".HasPattern(@"Adam (&|and) (?<someone_else>\w+)"));
+            Assert.IsTrue("ADAM AND STEVE".HasPattern(@"adam (&|and) (?<someone_else>\w+)", "i"));
 
             string fullname = "Lee Harvey Oswald";
             var m = fullname.MatchesPattern(@"(?<firstname>\w+)\s(\w+)\s(?<lastname>\w+)");
@@ -240,7 +236,7 @@ namespace Tests
 							  Will Smith,
 							  Ryan Gosling";
 
-            Assert.IsFalse(actors.IsPatternMatch("(Alec|Steven|William|Daniel) Baldwin"));
+            Assert.IsFalse(actors.HasPattern("(Alec|Steven|William|Daniel) Baldwin"));
 
             string input = "80304-6667";
 
@@ -254,8 +250,48 @@ namespace Tests
                 "i"   // RegexOptions are expressed as a character string (see below for reference)
             )["someone_else"]); // "STEVE"
 
-            Assert.AreEqual("needle", "haystack needle haystack".FindPatternCapture(@"\s(needle)\s", 1));
+            Assert.AreEqual("needle", "haystack needle haystack".FindPattern(@"\s(needle)\s", 1));
             Assert.AreEqual(" needle ", "haystack needle haystack".FindPattern(@"\sneedle\s"));
+
+            var response = @"HTTP/1.1 200 OK
+Server: nginx/1.0.4
+Date: Fri, 24 Jun 2011 21:52:36 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Status: 200 OK
+Cache-Control: max-age=0, must-revalidate
+Content-Encoding: gzip";
+            int found = 0;
+response.Scan(@"^(?<header>[a-z\-]+): (?<value>.+)$", "im", (name, value) =>
+{
+    found++;
+});
+
+Assert.AreEqual(8, found);
+
+var tvguide = @"Space Jam                      ★½
+                Slap Shot 2: Breaking the Ice  ★
+                Cop and a Half                 ½
+                Battlefield Earth              ★
+                Gigli                          ★½
+                Weird Science                  ★★★
+                Stop or My Mom Will Shoot!     ½";
+
+// First movie with at least 3 stars
+Assert.AreEqual("Weird Science", tvguide.FindPattern(@"^\s*([a-z0-9\s\!:\-,\.]+)\s*(★{3,}).*$", "mi", 1).Trim());
+            // "Weird Science"
+
+            /*using (var resp = WebRequest.Create("http://www.google.com").GetResponse())
+            {
+                using (var reader = new StreamReader(resp.GetResponseStream(), true))
+                {
+                    reader.ReadToEnd().Scan("href=\"(.+)\".*>(.*)</a>", (anchor, text) =>
+                    {
+                        Console.WriteLine("\"{0}\": [{1}]", text, anchor);
+                    });
+                }
+            }*/
         }
 
         [TestMethod]
@@ -431,14 +467,14 @@ Content-Encoding: gzip"
             data.MatchesPattern("uuu", "i");
             data.MatchesPattern("uuu");
             Assert.AreEqual(startEntities + 2, StringRegexExtensions.CacheCount);
-            data.IsPatternMatch("|.+|", "ixc");
-            data.IsPatternMatch("|.+|", "ic");
-            data.IsPatternMatch("|.+|", "ixc");
-            data.IsPatternMatch("|.+|", "ixc");
-            data.IsPatternMatch("|.+|", "ixc");
-            data.IsPatternMatch("|.+|", "ixc");
-            data.IsPatternMatch("|.+|", "ixc");
-            data.IsPatternMatch("|.+|", "ixc");
+            data.HasPattern("|.+|", "ixc");
+            data.HasPattern("|.+|", "ic");
+            data.HasPattern("|.+|", "ixc");
+            data.HasPattern("|.+|", "ixc");
+            data.HasPattern("|.+|", "ixc");
+            data.HasPattern("|.+|", "ixc");
+            data.HasPattern("|.+|", "ixc");
+            data.HasPattern("|.+|", "ixc");
             Assert.AreEqual(startEntities + 4, StringRegexExtensions.CacheCount);
         }
 #endif

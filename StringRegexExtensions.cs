@@ -319,14 +319,14 @@ namespace System
         /// <returns></returns>
         public static bool HasPattern(this string input, string pattern)
         {
-            return pattern.ToRegex().IsMatch(input);
+            return HasPattern(input, pattern, null);
         }
 
         /// <summary>
         /// Tests whether this string matches a string regex pattern with optional regex options.
         /// </summary>
         /// <param name="pattern">The regex pattern to test against this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         public static bool HasPattern(this string input, string pattern, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input);
@@ -338,14 +338,14 @@ namespace System
         /// <param name="pattern">The regex pattern to test against this string</param>
         public static bool HasPattern(this string input, string pattern, int startat)
         {
-            return pattern.ToRegex().IsMatch(input, startat);
+            return HasPattern(input, pattern, null, startat);
         }
 
         /// <summary>
         /// Tests whether this string matches a string regex pattern
         /// </summary>
         /// <param name="pattern">The regex pattern to test against this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         public static bool HasPattern(this string input, string pattern, string options, int startat)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input, startat);
@@ -358,15 +358,14 @@ namespace System
         /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
         public static MatchData MatchesPattern(this string input, string pattern)
         {
-            var re = pattern.ToRegex();
-            return new MatchData(re, re.Matches(input));
+            return MatchesPattern(input, pattern, null);
         }
 
         /// <summary>
         /// Returns matches within the string that match a specified regex pattern with the specified regex options
         /// </summary>
         /// <param name="pattern">The regex pattern to match against this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
         public static MatchData MatchesPattern(this string input, string pattern, string options)
         {
@@ -382,8 +381,7 @@ namespace System
         /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
         public static MatchData MatchesPattern(this string input, string pattern, int startat)
         {
-            var re = pattern.ToRegex();
-            return new MatchData(re, re.Matches(input, startat));
+            return MatchesPattern(input, pattern, null, startat);
         }
 
         /// <summary>
@@ -391,7 +389,7 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to match against this string</param>
         /// <param name="startat">The offset at which to begin matching</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>The <see cref="MatchData"/> associated with the pattern match.</returns>
         public static MatchData MatchesPattern(this string input, string pattern, string options, int startat)
         {
@@ -407,7 +405,7 @@ namespace System
         /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string Sub(this string input, string pattern, string replacement)
         {
-            return pattern.ToRegex().Replace(input, replacement, 1);
+            return Sub(input, pattern, null, replacement);
         }
 
         /// <summary>
@@ -415,7 +413,7 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
         /// <param name="replacement">The text replacement to use</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string Sub(this string input, string pattern, string options, string replacement)
         {
@@ -430,7 +428,7 @@ namespace System
         /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string Sub(this string input, string pattern, Func<Match, string> evaluator)
         {
-            return pattern.ToRegex().Replace(input, delegate(Match arg) { return evaluator(arg); }, 1);
+            return Sub(input, pattern, null, evaluator);
         }
 
         /// <summary>
@@ -438,7 +436,7 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
         /// <param name="replacement">The text replacement to use</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string Sub(this string input, string pattern, string options, Func<Match, string> evaluator)
         {
@@ -453,7 +451,7 @@ namespace System
         /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string GSub(this string input, string pattern, string replacement)
         {
-            return pattern.ToRegex().Replace(input, replacement);
+            return GSub(input, pattern, null, replacement);
         }
 
         /// <summary>
@@ -461,9 +459,9 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
         /// <param name="replacement">The text replacement to use</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>A copy of this string with specified pattern replaced</returns>
-        public static string GSub(this string input, string options, string pattern, string replacement)
+        public static string GSub(this string input, string pattern, string options, string replacement)
         {
             return pattern.ToRegex(GetOptions(options)).Replace(input, replacement);
         }
@@ -476,7 +474,7 @@ namespace System
         /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string GSub(this string input, string pattern, Func<Match, string> evaluator)
         {
-            return pattern.ToRegex().Replace(input, delegate(Match arg) { return evaluator(arg); });
+            return GSub(input, pattern, null, evaluator);
         }
 
         /// <summary>
@@ -484,7 +482,7 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to match</param>
         /// <param name="evaluator">A function that returns either the replacement text or the original string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>A copy of this string with specified pattern replaced</returns>
         public static string GSub(this string input, string pattern, string options, Func<Match, string> evaluator)
         {
@@ -498,14 +496,14 @@ namespace System
         /// <returns>The offset of the first match</returns>
         public static int IndexOfPattern(this string input, string pattern)
         {
-            return input.MatchPattern(pattern).Begin(0);
+            return IndexOfPattern(input, pattern, null);
         }
 
         /// <summary>
         /// Returns the first index of the specified regex pattern and options
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>The offset of the first match</returns>
         public static int IndexOfPattern(this string input, string pattern, string options)
         {
@@ -520,14 +518,14 @@ namespace System
         /// <returns>The offset of the first match</returns>
         public static int IndexOfPattern(this string input, string pattern, int startat)
         {
-            return input.MatchPattern(pattern, startat).Begin(0);
+            return IndexOfPattern(input, pattern, null, startat);
         }
 
         /// <summary>
         /// Returns the first index of the specified regex pattern and options after the specified position
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <param name="startat">The string position from which to begin</param>
         /// <returns>The offset of the first match</returns>
         public static int IndexOfPattern(this string input, string pattern, string options, int startat)
@@ -542,15 +540,14 @@ namespace System
         /// <returns>The offset of the last match</returns>
         public static int LastIndexOfPattern(this string input, string pattern)
         {
-            var m = input.MatchesPattern(pattern);
-            return m.Begin(m.MatchCount - 1);
+            return LastIndexOfPattern(input, pattern, null);
         }
 
         /// <summary>
         /// Returns the last index of the specified regex pattern
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>The offset of the last match</returns>
         public static int LastIndexOfPattern(this string input, string pattern, string options)
         {
@@ -572,7 +569,7 @@ namespace System
         /// Return the value of the first match of the specified regex pattern
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>The first value matching the specified pattern</returns>
         public static string FindPattern(this string input, string pattern, string options)
         {
@@ -587,14 +584,14 @@ namespace System
         /// <returns>The first value matching the specified pattern or null if the pattern is not found.</returns>
         public static string FindPattern(this string input, string pattern, int capture)
         {
-            try { return input.MatchPattern(pattern)[capture]; } catch (IndexOutOfRangeException) { return null; }
+            return FindPattern(input, pattern, null, capture);
         }
 
         /// <summary>
         /// Return the value of the specified numbered capture of the first match of the specified regex pattern
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <param name="capture">The index of the capture to return</param>
         /// <returns>The first value matching the specified pattern or null if the pattern is not found.</returns>
         public static string FindPattern(this string input, string pattern, string options, int capture)
@@ -609,18 +606,14 @@ namespace System
         /// <returns>A string array with 3 elements, containing the partitioned string</returns>
         public static string[] Partition(this string input, string pattern)
         {
-            var m = input.MatchPattern(pattern);
-            if (m.Count == 0)
-                return new string[] { String.Empty, String.Empty, input };
-
-            return new string[] { input.Substring(0, m.Begin(0)), m.First(), input.Substring(m.End(0)) };
+            return Partition(input, pattern, null);
         }
 
         /// <summary>
         /// Partition this string into the head, match value, and tail according to the specified regex value
         /// </summary>
         /// <param name="pattern">The regex pattern to use when partitioning this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <returns>A string array with 3 elements, containing the partitioned string</returns>
         public static string[] Partition(this string input, string pattern, string options)
         {
@@ -676,7 +669,7 @@ namespace System
         /// Scans this string for the specified pattern and options, and calls the specified function for each match.
         /// </summary>
         /// <param name="pattern">The regex pattern to find within this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <param name="each">The function to call for each match.</param>
         /// <returns></returns>
         public static void Scan(this string input, string pattern, string options, Action<string> each)
@@ -692,7 +685,7 @@ namespace System
         /// Scans this string for the specified pattern and options which can contains two capturing groups or a group with one or more subgroups. Each time the pattern is encountered, the specified function is invoked with the first two captures.
         /// </summary>
         /// <param name="pattern">The regex pattern to find within the string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <param name="each">The function to call for each maching group.</param>
         public static void Scan(this string input, string pattern, string options, Action<string, string> each)
         {
@@ -710,7 +703,7 @@ namespace System
         /// Scans this string for the specified pattern and options which can contain three capturing groups or a group with one or more subgroups. Each time the pattern is encountered, the specified function is invoked with the first three captures specified.
         /// </summary>
         /// <param name="pattern">The regex pattern to find within the string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <param name="each">The function to call for each maching group.</param>
         public static void Scan(this string input, string pattern, string options, Action<string, string, string> each)
         {
@@ -730,7 +723,7 @@ namespace System
         /// Scans this string for the specified pattern and options which can contain four capturing groups or a group with one or more subgroups. Each time the pattern is encountered, the specified function is invoked with the first four captures specified.
         /// </summary>
         /// <param name="pattern">The regex pattern to find within the string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
+        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), m: multiline mode (^ and $ match lines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <param name="each">The function to call for each maching group.</param>
         public static void Scan(this string input, string pattern, string options, Action<string, string, string, string> each)
         {
@@ -751,8 +744,7 @@ namespace System
         // Single match, used internally
         static MatchData MatchPattern(this string input, string pattern)
         {
-            var re = pattern.ToRegex();
-            return new MatchData(re, re.Match(input));
+            return MatchPattern(input, pattern, null);
         }
 
         static MatchData MatchPattern(this string input, string pattern, string options)
@@ -763,8 +755,7 @@ namespace System
 
         static MatchData MatchPattern(this string input, string pattern, int startat)
         {
-            var re = pattern.ToRegex();
-            return new MatchData(re, re.Match(input, startat));
+            return MatchPattern(input, pattern, null, startat);
         }
 
         static MatchData MatchPattern(this string input, string pattern, string options, int startat)
