@@ -1,10 +1,10 @@
 # ex #
 
-> The ruby-jealous c# extension class that makes regular expressions fun again.
+> A lightweight, ruby-jealous c# extension class that makes regular expressions fun again.
 
 # What It Does #
 
-1. strings have been suped up with Regex-powered methods `IsPatternMatch`, `MatchesPattern`, `Sub`, `Scan`, (and more!)
+1. strings have been suped up with Regex-powered methods `HasPattern`, `MatchesPattern`, `Sub`, `Scan`, (and more!)
 2. The MatchesPattern method returns a new class `MatchData` that simplifies access to captures. It's a little like ruby's class of the same name. See [this answer][1] on stackoverflow for a better explanation of why the default implementation of MatchCollection is so complicated.
 3. Any `RegexOptions` can be expressed as a character string
 4. When using .NET 4, regex objects are cached
@@ -18,13 +18,13 @@
 
 ### Test a match ###
 
-    "Adam & Steve".IsPatternMatch(
+    "Adam & Steve".HasPattern(
         @"Adam (&|and) (?<someone_else>\w+)"
     ); // Returns true
 
 ### Test a match with case insensitivity option: ###
 
-    "ADAM AND STEVE".IsPatternMatch(
+    "ADAM AND STEVE".HasPattern(
         @"adam (&|and) (?<someone_else>\w+)",
         "i"   // RegexOptions are expressed as a character string (see below for reference)
     ); // Returns true
@@ -35,7 +35,7 @@
 
 ### Find the first match, but return the first capture group.
 
-    "haystack needle haystack".FindPatternCapture(@"\s(needle)\s", 1);  // returns "needle"
+    "haystack needle haystack".FindPattern(@"\s(needle)\s", 1);  // returns "needle"
 
 ### Substitution: ###
 
