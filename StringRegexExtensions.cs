@@ -245,6 +245,7 @@ namespace System
         static readonly Dictionary<char, RegexOptions> _optionChars = new Dictionary<char, RegexOptions> {
             { 'i', RegexOptions.IgnoreCase },
             { 's', RegexOptions.Singleline },
+            { 'm', RegexOptions.Multiline },
             { 'x', RegexOptions.IgnorePatternWhitespace },
             { 'c', RegexOptions.Compiled },
             { 'r', RegexOptions.RightToLeft }
@@ -316,7 +317,7 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to test against this string</param>
         /// <returns></returns>
-        public static bool IsPatternMatch(this string input, string pattern)
+        public static bool HasPattern(this string input, string pattern)
         {
             return pattern.ToRegex().IsMatch(input);
         }
@@ -326,7 +327,7 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to test against this string</param>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
-        public static bool IsPatternMatch(this string input, string pattern, string options)
+        public static bool HasPattern(this string input, string pattern, string options)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input);
         }
@@ -335,7 +336,7 @@ namespace System
         /// Tests whether this string matches a string regex pattern
         /// </summary>
         /// <param name="pattern">The regex pattern to test against this string</param>
-        public static bool IsPatternMatch(this string input, string pattern, int startat)
+        public static bool HasPattern(this string input, string pattern, int startat)
         {
             return pattern.ToRegex().IsMatch(input, startat);
         }
@@ -345,10 +346,10 @@ namespace System
         /// </summary>
         /// <param name="pattern">The regex pattern to test against this string</param>
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
-        public static bool IsPatternMatch(this string input, string pattern, string options, int startat)
+        public static bool HasPattern(this string input, string pattern, string options, int startat)
         {
             return pattern.ToRegex(GetOptions(options)).IsMatch(input, startat);
-        }      
+        }
 
         /// <summary>
         /// Returns matches within the string that match a specified regex pattern
@@ -584,7 +585,7 @@ namespace System
         /// <param name="pattern">The regex pattern to find within this string</param>
         /// <param name="capture">The index of the capture to return</param>
         /// <returns>The first value matching the specified pattern or null if the pattern is not found.</returns>
-        public static string FindPatternCapture(this string input, string pattern, int capture)
+        public static string FindPattern(this string input, string pattern, int capture)
         {
             try { return input.MatchPattern(pattern)[capture]; } catch (IndexOutOfRangeException) { return null; }
         }
@@ -596,32 +597,9 @@ namespace System
         /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
         /// <param name="capture">The index of the capture to return</param>
         /// <returns>The first value matching the specified pattern or null if the pattern is not found.</returns>
-        public static string FindPatternCapture(this string input, string pattern, string options, int capture)
+        public static string FindPattern(this string input, string pattern, string options, int capture)
         {
             try { return input.MatchPattern(pattern, options)[capture]; } catch (IndexOutOfRangeException) { return null; }
-        }
-
-        /// <summary>
-        /// Return the value of the specified named capture of the first match of the specified regex pattern
-        /// </summary>
-        /// <param name="pattern">The regex pattern to find within this string</param>
-        /// <param name="capture">The name of the capture to return</param>
-        /// <returns>The first named capture value matching the specified pattern or null if the pattern is not found.</returns>
-        public static string FindPatternCapture(this string input, string pattern, string capture)
-        {
-            return input.MatchPattern(pattern)[capture];
-        }
-
-        /// <summary>
-        /// Return the value of the specified named capture of the first match of the specified regex pattern
-        /// </summary>
-        /// <param name="pattern">The regex pattern to find within this string</param>
-        /// <param name="options">Combine any characters -- i: ignore case, s: single line mode (period [.] matches newlines), x: ignore whitespace, c: compiled, r: right to left</param>
-        /// <param name="capture">The name of the capture to return</param>
-        /// <returns>The first named capture value matching the specified pattern or null if the pattern is not found.</returns>
-        public static string FindPatternCapture(this string input, string pattern, string options, string capture)
-        {
-            return input.MatchPattern(pattern, options)[capture];
         }
 
         /// <summary>
